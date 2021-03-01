@@ -10,7 +10,6 @@ import (
 	"errors"
 
 	"github.com/polytomic/odbc/api"
-	"github.com/alexbrainman/odbc/api"
 )
 
 // TODO(brainman): see if I could use SQLExecDirect anywhere

@@ -13,12 +13,8 @@ import (
 	"strings"
 	"unsafe"
 
-<<<<<<< HEAD
 	"github.com/polytomic/odbc/api"
-=======
-	"github.com/alexbrainman/odbc/api"
 	"go.uber.org/atomic"
->>>>>>> a525304 (Refactor statement closing)
 )
 
 var drv Driver
