@@ -7,7 +7,7 @@ import (
 	"errors"
 	"unsafe"
 
-	"github.com/ninthclowd/odbc/api"
+	"github.com/polytomic/odbc/api"
 )
 
 var ErrTXAlreadyStarted = errors.New("already in a transaction")
