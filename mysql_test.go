@@ -8,8 +8,11 @@ import (
 	"database/sql"
 	"flag"
 	"fmt"
+	"reflect"
 	"testing"
 	"time"
+
+	"gotest.tools/v3/assert"
 )
 
 var (
@@ -55,6 +58,59 @@ func TestMYSQLTime(t *testing.T) {
 	if ret != now {
 		t.Fatalf("unexpected return value: want=%v, is=%v", now, ret)
 	}
+
+	exec(t, db, "drop table temp")
+}
+
+func TestMYSQLNullability(t *testing.T) {
+	db, sc, err := mysqlConnect()
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer closeDB(t, db, sc, sc)
+
+	db.Exec("drop table temp")
+	exec(t, db, `create table temp(name nvarchar(50), age int)`)
+
+	rows, err := db.Query("select age from temp where name=?", "v")
+	cTypes, err := rows.ColumnTypes()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	for _, colType := range cTypes {
+		typ := *colType
+		if nullable, ok := typ.Nullable(); nullable == false || ok == false {
+			t.Fatalf("column did not contain nullability information")
+		}
+
+	}
+	rows.Close()
+
+	exec(t, db, "drop table temp")
+}
+
+func TestMYSQLScanType(t *testing.T) {
+	db, sc, err := mysqlConnect()
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer closeDB(t, db, sc, sc)
+
+	db.Exec("drop table temp")
+	exec(t, db, `create table temp(name nvarchar(50), age int)`)
+
+	rows, err := db.Query("select age from temp where name=?", "v")
+	cTypes, err := rows.ColumnTypes()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	for _, colType := range cTypes {
+		typ := *colType
+		assert.Equal(t, reflect.TypeOf(int64(0)), typ.ScanType())
+	}
+	rows.Close()
 
 	exec(t, db, "drop table temp")
 }

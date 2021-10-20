@@ -8,6 +8,7 @@ import (
 	"database/sql/driver"
 	"errors"
 	"fmt"
+	"reflect"
 	"time"
 	"unsafe"
 
@@ -37,26 +38,28 @@ type Column interface {
 	Name() string
 	Bind(h api.SQLHSTMT, idx int) (bool, error)
 	Value(h api.SQLHSTMT, idx int) (driver.Value, error)
+	Nullable() (bool, bool)
+	ScanType() reflect.Type
 }
 
-func describeColumn(h api.SQLHSTMT, idx int, namebuf []uint16) (namelen int, sqltype api.SQLSMALLINT, size api.SQLULEN, ret api.SQLRETURN) {
-	var l, decimal, nullable api.SQLSMALLINT
+func describeColumn(h api.SQLHSTMT, idx int, namebuf []uint16) (namelen int, sqltype api.SQLSMALLINT, size api.SQLULEN, nullable api.SQLSMALLINT, ret api.SQLRETURN) {
+	var l, decimal api.SQLSMALLINT
 	ret = api.SQLDescribeCol(h, api.SQLUSMALLINT(idx+1),
 		(*api.SQLWCHAR)(unsafe.Pointer(&namebuf[0])),
 		api.SQLSMALLINT(len(namebuf)), &l,
 		&sqltype, &size, &decimal, &nullable)
-	return int(l), sqltype, size, ret
+	return int(l), sqltype, size, nullable, ret
 }
 
 // TODO(brainman): did not check for MS SQL timestamp
 
 func NewColumn(h api.SQLHSTMT, idx int) (Column, error) {
 	namebuf := make([]uint16, 150)
-	namelen, sqltype, size, ret := describeColumn(h, idx, namebuf)
+	namelen, sqltype, size, nullable, ret := describeColumn(h, idx, namebuf)
 	if ret == api.SQL_SUCCESS_WITH_INFO && namelen > len(namebuf) {
 		// try again with bigger buffer
 		namebuf = make([]uint16, namelen)
-		namelen, sqltype, size, ret = describeColumn(h, idx, namebuf)
+		namelen, sqltype, size, nullable, ret = describeColumn(h, idx, namebuf)
 	}
 	if IsError(ret) {
 		return nil, NewError("SQLDescribeCol", h)
@@ -66,8 +69,9 @@ func NewColumn(h api.SQLHSTMT, idx int) (Column, error) {
 		return nil, errors.New("Failed to allocate column name buffer")
 	}
 	b := &BaseColumn{
-		name:    api.UTF16ToString(namebuf[:namelen]),
-		SQLType: sqltype,
+		name:     api.UTF16ToString(namebuf[:namelen]),
+		SQLType:  sqltype,
+		nullable: nullable,
 	}
 	switch sqltype {
 	case api.SQL_BIT:
@@ -112,9 +116,10 @@ func NewColumn(h api.SQLHSTMT, idx int) (Column, error) {
 
 // BaseColumn implements common column functionality.
 type BaseColumn struct {
-	name    string
-	SQLType api.SQLSMALLINT
-	CType   api.SQLSMALLINT
+	name     string
+	SQLType  api.SQLSMALLINT
+	CType    api.SQLSMALLINT
+	nullable api.SQLSMALLINT
 }
 
 func (c *BaseColumn) Name() string {
@@ -182,6 +187,81 @@ func (c *BaseColumn) Value(buf []byte) (driver.Value, error) {
 		return buf, nil
 	}
 	return nil, fmt.Errorf("unsupported column ctype %d", c.CType)
+}
+
+// Nullable returns true if the column is nullable and false otherwise.
+// If the column nullability is unknown, ok is false.
+func (c *BaseColumn) Nullable() (bool, bool) {
+	return c.nullable == 1, true
+}
+
+// Returns the type that can be used to scan types into. For example, the
+// database column type "bigint" this should return "reflect.TypeOf(int64(0))".
+func (c *BaseColumn) ScanType() reflect.Type {
+	switch c.SQLType {
+	// CHAR
+	case api.SQL_CHAR:
+		return reflect.TypeOf("")
+	case api.SQL_WCHAR:
+		return reflect.TypeOf("")
+	case api.SQL_VARCHAR:
+		return reflect.TypeOf("")
+	case api.SQL_WVARCHAR:
+		return reflect.TypeOf("")
+	case api.SQL_LONGVARCHAR:
+		return reflect.TypeOf("")
+	case api.SQL_WLONGVARCHAR:
+		return reflect.TypeOf("")
+	// XML
+	case api.SQL_SS_XML:
+		return reflect.TypeOf("")
+	// BINARY
+	case api.SQL_BINARY:
+		return reflect.TypeOf([]byte{})
+	case api.SQL_VARBINARY:
+		return reflect.TypeOf([]byte{})
+	case api.SQL_LONGVARBINARY:
+		return reflect.TypeOf([]byte{})
+	// NUMERIC FIXED LENGTH
+	case api.SQL_BIT:
+		return reflect.TypeOf(true)
+	case api.SQL_TINYINT:
+		return reflect.TypeOf(int32(0))
+	case api.SQL_SMALLINT:
+		return reflect.TypeOf(int32(0))
+	case api.SQL_INTEGER:
+		return reflect.TypeOf(int32(0))
+	case api.SQL_BIGINT:
+		return reflect.TypeOf(int64(0))
+	case api.SQL_NUMERIC:
+		return reflect.TypeOf([]byte{})
+	case api.SQL_DECIMAL:
+		return reflect.TypeOf([]byte{})
+	case -25: // not declared in sql.h nor in sqlext.h
+		return reflect.TypeOf(int64(0))
+	// NUMERIC NOT FIXED LENGTH
+	case api.SQL_REAL:
+		return reflect.TypeOf(float64(0))
+	case api.SQL_FLOAT:
+		return reflect.TypeOf(float64(0))
+	case api.SQL_DOUBLE:
+		return reflect.TypeOf(float64(0))
+	// DATE / TIME
+	case api.SQL_TYPE_DATE:
+		return reflect.TypeOf(time.Time{})
+	case api.SQL_TYPE_TIME:
+		return reflect.TypeOf(time.Time{})
+	case api.SQL_SS_TIME2:
+		return reflect.TypeOf(time.Time{})
+	case api.SQL_TYPE_TIMESTAMP:
+		return reflect.TypeOf(time.Time{})
+	// GUID
+	case api.SQL_GUID:
+		// better to return an uuid?
+		return reflect.TypeOf([]byte{})
+	default:
+		panic(fmt.Sprintf("not implemented ScanType() for type %v", c.CType))
+	}
 }
 
 // BindableColumn allows access to columns that can have their buffers

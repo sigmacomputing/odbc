@@ -7,6 +7,7 @@ package odbc
 import (
 	"database/sql/driver"
 	"io"
+	"reflect"
 
 	"github.com/polytomic/odbc/api"
 )
@@ -63,4 +64,16 @@ func (r *Rows) NextResultSet() error {
 		return err
 	}
 	return nil
+}
+
+// ColumnTypeScanType should return the value type that can be used to scan
+// types into.
+func (r *Rows) ColumnTypeScanType(index int) reflect.Type {
+	return r.s.cols[index].ScanType()
+}
+
+// Nullable returns true if the column is nullable and false otherwise.
+// If the column nullability is unknown, ok is false.
+func (r *Rows) ColumnTypeNullable(index int) (nullable, ok bool) {
+	return r.s.cols[index].Nullable()
 }
