@@ -18,6 +18,7 @@ type Driver struct {
 	Stats
 	h       api.SQLHENV // environment handle
 	initErr error
+	Loc     *time.Location
 }
 
 func initDriver() error {

@@ -131,6 +131,10 @@ func (c *BaseColumn) Value(buf []byte) (driver.Value, error) {
 	if len(buf) > 0 {
 		p = unsafe.Pointer(&buf[0])
 	}
+	loc := time.UTC
+	if drv.Loc != nil {
+		loc = drv.Loc
+	}
 	switch c.CType {
 	case api.SQL_C_BIT:
 		return buf[0] != 0, nil
@@ -152,7 +156,7 @@ func (c *BaseColumn) Value(buf []byte) (driver.Value, error) {
 		t := (*api.SQL_TIMESTAMP_STRUCT)(p)
 		r := time.Date(int(t.Year), time.Month(t.Month), int(t.Day),
 			int(t.Hour), int(t.Minute), int(t.Second), int(t.Fraction),
-			time.Local)
+			loc)
 		return r, nil
 	case api.SQL_C_GUID:
 		t := (*api.SQLGUID)(p)
@@ -169,19 +173,19 @@ func (c *BaseColumn) Value(buf []byte) (driver.Value, error) {
 	case api.SQL_C_DATE:
 		t := (*api.SQL_DATE_STRUCT)(p)
 		r := time.Date(int(t.Year), time.Month(t.Month), int(t.Day),
-			0, 0, 0, 0, time.Local)
+			0, 0, 0, 0, loc)
 		return r, nil
 	case api.SQL_C_TIME:
 		t := (*api.SQL_TIME_STRUCT)(p)
 		r := time.Date(1, time.January, 1,
-			int(t.Hour), int(t.Minute), int(t.Second), 0, time.Local)
+			int(t.Hour), int(t.Minute), int(t.Second), 0, loc)
 		return r, nil
 	case api.SQL_C_BINARY:
 		if c.SQLType == api.SQL_SS_TIME2 {
 			t := (*api.SQL_SS_TIME2_STRUCT)(p)
 			r := time.Date(1, time.January, 1,
 				int(t.Hour), int(t.Minute), int(t.Second), int(t.Fraction),
-				time.Local)
+				loc)
 			return r, nil
 		}
 		return buf, nil
