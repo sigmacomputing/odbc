@@ -108,7 +108,8 @@ func TestMYSQLScanType(t *testing.T) {
 
 	for _, colType := range cTypes {
 		typ := *colType
-		assert.Equal(t, reflect.TypeOf(int64(0)), typ.ScanType())
+		assert.Equal(t, reflect.TypeOf(int32(0)), typ.ScanType())
+		assert.Equal(t, "SQL_C_LONG", typ.DatabaseTypeName())
 	}
 	rows.Close()
 
