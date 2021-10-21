@@ -82,49 +82,74 @@ func (r *Rows) ColumnTypeNullable(index int) (nullable, ok bool) {
 func (r *Rows) ColumnTypeDatabaseTypeName(index int) string {
 	switch x := r.s.cols[index].(type) {
 	case *BindableColumn:
-		return cTypeString(x.CType)
+		return sqlTypeString(x.SQLType)
 	case *NonBindableColumn:
-		return cTypeString(x.CType)
+		return sqlTypeString(x.SQLType)
 	}
 	return ""
 }
 
-func cTypeString(ct api.SQLSMALLINT) string {
-	switch ct {
-	case api.SQL_C_CHAR:
-		return "SQL_C_CHAR"
-	case api.SQL_C_LONG:
-		return "SQL_C_LONG"
-	case api.SQL_C_SHORT:
-		return "SQL_C_SHORT"
-	case api.SQL_C_FLOAT:
-		return "SQL_C_FLOAT"
-	case api.SQL_C_DOUBLE:
-		return "SQL_C_DOUBLE"
-	case api.SQL_C_NUMERIC:
-		return "SQL_C_NUMERIC"
-	case api.SQL_C_DATE:
-		return "SQL_C_DATE"
-	case api.SQL_C_TIME:
-		return "SQL_C_TIME"
-	case api.SQL_C_TYPE_TIMESTAMP:
-		return "SQL_C_TYPE_TIMESTAMP"
-	case api.SQL_C_TIMESTAMP:
-		return "SQL_C_TIMESTAMP"
-	case api.SQL_C_BINARY:
-		return "SQL_C_BINARY"
-	case api.SQL_C_BIT:
-		return "SQL_C_BIT"
-	case api.SQL_C_WCHAR:
-		return "SQL_C_WCHAR"
-	case api.SQL_C_DEFAULT:
-		return "SQL_C_DEFAULT"
-	case api.SQL_C_SBIGINT:
-		return "SQL_C_SBIGINT"
-	case api.SQL_C_UBIGINT:
-		return "SQL_C_UBIGINT"
-	case api.SQL_C_GUID:
-		return "SQL_C_GUID"
+func sqlTypeString(sqlt api.SQLSMALLINT) string {
+	switch sqlt {
+	case api.SQL_UNKNOWN_TYPE:
+		return "ODBC_SQL_UNKNOWN_TYPE"
+	case api.SQL_CHAR:
+		return "ODBC_SQL_CHAR"
+	case api.SQL_NUMERIC:
+		return "ODBC_SQL_NUMERIC"
+	case api.SQL_DECIMAL:
+		return "ODBC_SQL_DECIMAL"
+	case api.SQL_INTEGER:
+		return "ODBC_SQL_INTEGER"
+	case api.SQL_SMALLINT:
+		return "ODBC_SQL_SMALLINT"
+	case api.SQL_FLOAT:
+		return "ODBC_SQL_FLOAT"
+	case api.SQL_REAL:
+		return "ODBC_SQL_REAL"
+	case api.SQL_DOUBLE:
+		return "ODBC_SQL_DOUBLE"
+	case api.SQL_DATETIME:
+		return "ODBC_SQL_DATETIME"
+	case api.SQL_TIME:
+		return "ODBC_SQL_TIME"
+	case api.SQL_VARCHAR:
+		return "ODBC_SQL_VARCHAR"
+	case api.SQL_TYPE_DATE:
+		return "ODBC_SQL_TYPE_DATE"
+	case api.SQL_TYPE_TIME:
+		return "ODBC_SQL_TYPE_TIME"
+	case api.SQL_TYPE_TIMESTAMP:
+		return "ODBC_SQL_TYPE_TIMESTAMP"
+	case api.SQL_TIMESTAMP:
+		return "ODBC_SQL_TIMESTAMP"
+	case api.SQL_LONGVARCHAR:
+		return "ODBC_SQL_LONGVARCHAR"
+	case api.SQL_BINARY:
+		return "ODBC_SQL_BINARY"
+	case api.SQL_VARBINARY:
+		return "ODBC_SQL_VARBINARY"
+	case api.SQL_LONGVARBINARY:
+		return "ODBC_SQL_LONGVARBINARY"
+	case api.SQL_BIGINT:
+		return "ODBC_SQL_BIGINT"
+	case api.SQL_TINYINT:
+		return "ODBC_SQL_TINYINT"
+	case api.SQL_BIT:
+		return "ODBC_SQL_BIT"
+	case api.SQL_WCHAR:
+		return "ODBC_SQL_WCHAR"
+	case api.SQL_WVARCHAR:
+		return "ODBC_SQL_WVARCHAR"
+	case api.SQL_WLONGVARCHAR:
+		return "ODBC_SQL_WLONGVARCHAR"
+	case api.SQL_GUID:
+		return "ODBC_SQL_GUID"
+	case api.SQL_SIGNED_OFFSET:
+		return "ODBC_SQL_SIGNED_OFFSET"
+	case api.SQL_UNSIGNED_OFFSET:
+		return "ODBC_SQL_UNSIGNED_OFFSET"
 	}
+
 	return ""
 }
