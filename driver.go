@@ -13,6 +13,11 @@ import (
 )
 
 var drv Driver
+var Recovery func() = func() {
+	if r := recover(); r != nil {
+		panic(fmt.Sprintf("internal failure: %v", r))
+	}
+}
 
 type Driver struct {
 	Stats
