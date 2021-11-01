@@ -69,18 +69,18 @@ func (r *Rows) NextResultSet() error {
 // ColumnTypeScanType should return the value type that can be used to scan
 // types into.
 func (r *Rows) ColumnTypeScanType(index int) reflect.Type {
-	return r.s.cols[index].ScanType()
+	return r.os.Cols[index].ScanType()
 }
 
 // Nullable returns true if the column is nullable and false otherwise.
 // If the column nullability is unknown, ok is false.
 func (r *Rows) ColumnTypeNullable(index int) (nullable, ok bool) {
-	return r.s.cols[index].Nullable()
+	return r.os.Cols[index].Nullable()
 }
 
 // ColumnTypeDatabaseTypeName return the database system type name.
 func (r *Rows) ColumnTypeDatabaseTypeName(index int) string {
-	switch x := r.s.cols[index].(type) {
+	switch x := r.os.Cols[index].(type) {
 	case *BindableColumn:
 		return sqlTypeString(x.SQLType)
 	case *NonBindableColumn:

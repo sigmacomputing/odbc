@@ -8,6 +8,8 @@ package odbc
 
 import (
 	"database/sql"
+	"fmt"
+	"time"
 
 	"github.com/polytomic/odbc/api"
 )
@@ -82,4 +84,8 @@ func init() {
 		drv.initErr = err
 	}
 	sql.Register("odbc", &drv)
+}
+
+func GetDriver() *Driver {
+	return &drv
 }
