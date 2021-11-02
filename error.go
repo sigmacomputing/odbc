@@ -41,6 +41,9 @@ func (e *Error) Error() string {
 }
 
 func NewError(apiName string, handle interface{}) error {
+	if drv.Logger != nil {
+		drv.Logger.Info().Msg("NewError (unsafe)")
+	}
 	h, ht, herr := ToHandleAndType(handle)
 	if herr != nil {
 		return herr

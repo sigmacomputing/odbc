@@ -23,6 +23,9 @@ const (
 // utf16toutf8 returns the UTF-8 encoding of the UTF-16 sequence s,
 // with a terminating NUL removed.
 func utf16toutf8(s []uint16) []byte {
+	if drv.Logger != nil {
+		drv.Logger.Info().Msg("utf conversion")
+	}
 	for i, v := range s {
 		if v == 0 {
 			s = s[0:i]

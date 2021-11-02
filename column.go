@@ -22,12 +22,18 @@ func (l *BufferLen) IsNull() bool {
 }
 
 func (l *BufferLen) GetData(h api.SQLHSTMT, idx int, ctype api.SQLSMALLINT, buf []byte) api.SQLRETURN {
+	if drv.Logger != nil {
+		drv.Logger.Info().Msg("getdata")
+	}
 	return api.SQLGetData(h, api.SQLUSMALLINT(idx+1), ctype,
 		api.SQLPOINTER(unsafe.Pointer(&buf[0])), api.SQLLEN(len(buf)),
 		(*api.SQLLEN)(l))
 }
 
 func (l *BufferLen) Bind(h api.SQLHSTMT, idx int, ctype api.SQLSMALLINT, buf []byte) api.SQLRETURN {
+	if drv.Logger != nil {
+		drv.Logger.Info().Msg("bind")
+	}
 	return api.SQLBindCol(h, api.SQLUSMALLINT(idx+1), ctype,
 		api.SQLPOINTER(unsafe.Pointer(&buf[0])), api.SQLLEN(len(buf)),
 		(*api.SQLLEN)(l))
@@ -43,6 +49,9 @@ type Column interface {
 }
 
 func describeColumn(h api.SQLHSTMT, idx int, namebuf []uint16) (namelen int, sqltype api.SQLSMALLINT, size api.SQLULEN, nullable api.SQLSMALLINT, ret api.SQLRETURN) {
+	if drv.Logger != nil {
+		drv.Logger.Info().Msg("describeColumn (unsafe)")
+	}
 	var l, decimal api.SQLSMALLINT
 	ret = api.SQLDescribeCol(h, api.SQLUSMALLINT(idx+1),
 		(*api.SQLWCHAR)(unsafe.Pointer(&namebuf[0])),
@@ -54,6 +63,9 @@ func describeColumn(h api.SQLHSTMT, idx int, namebuf []uint16) (namelen int, sql
 // TODO(brainman): did not check for MS SQL timestamp
 
 func NewColumn(h api.SQLHSTMT, idx int) (Column, error) {
+	if drv.Logger != nil {
+		drv.Logger.Info().Msg("NewColumn")
+	}
 	namebuf := make([]uint16, 150)
 	namelen, sqltype, size, nullable, ret := describeColumn(h, idx, namebuf)
 	if ret == api.SQL_SUCCESS_WITH_INFO && namelen > len(namebuf) {
@@ -123,10 +135,16 @@ type BaseColumn struct {
 }
 
 func (c *BaseColumn) Name() string {
+	if drv.Logger != nil {
+		drv.Logger.Info().Msg("Name")
+	}
 	return c.name
 }
 
 func (c *BaseColumn) Value(buf []byte) (driver.Value, error) {
+	if drv.Logger != nil {
+		drv.Logger.Info().Msg("Value (unsafe)")
+	}
 	var p unsafe.Pointer
 	if len(buf) > 0 {
 		p = unsafe.Pointer(&buf[0])
@@ -196,12 +214,18 @@ func (c *BaseColumn) Value(buf []byte) (driver.Value, error) {
 // Nullable returns true if the column is nullable and false otherwise.
 // If the column nullability is unknown, ok is false.
 func (c *BaseColumn) Nullable() (bool, bool) {
+	if drv.Logger != nil {
+		drv.Logger.Info().Msg("Nullable")
+	}
 	return c.nullable == 1, true
 }
 
 // Returns the type that can be used to scan types into. For example, the
 // database column type "bigint" this should return "reflect.TypeOf(int64(0))".
 func (c *BaseColumn) ScanType() reflect.Type {
+	if drv.Logger != nil {
+		drv.Logger.Info().Msg("ScanType")
+	}
 	switch c.SQLType {
 	// CHAR
 	case api.SQL_CHAR:
@@ -285,6 +309,9 @@ type BindableColumn struct {
 // TODO(brainman): BindableColumn.Buffer is used by external code after external code returns - that needs to be avoided in the future
 
 func NewBindableColumn(b *BaseColumn, ctype api.SQLSMALLINT, bufSize int) *BindableColumn {
+	if drv.Logger != nil {
+		drv.Logger.Info().Msg("NewBindableColumn")
+	}
 	b.CType = ctype
 	c := &BindableColumn{BaseColumn: b, Size: bufSize}
 	l := 8 // always use small starting buffer
@@ -296,6 +323,9 @@ func NewBindableColumn(b *BaseColumn, ctype api.SQLSMALLINT, bufSize int) *Binda
 }
 
 func NewVariableWidthColumn(b *BaseColumn, ctype api.SQLSMALLINT, colWidth api.SQLULEN) (Column, error) {
+	if drv.Logger != nil {
+		drv.Logger.Info().Msg("NewVariableWidthColumn")
+	}
 	if colWidth == 0 || colWidth > 1024 {
 		b.CType = ctype
 		return &NonBindableColumn{b}, nil
@@ -318,6 +348,9 @@ func NewVariableWidthColumn(b *BaseColumn, ctype api.SQLSMALLINT, colWidth api.S
 }
 
 func (c *BindableColumn) Bind(h api.SQLHSTMT, idx int) (bool, error) {
+	if drv.Logger != nil {
+		drv.Logger.Info().Msg("BindableColumn.Bind")
+	}
 	ret := c.Len.Bind(h, idx, c.CType, c.Buffer)
 	if IsError(ret) {
 		return false, NewError("SQLBindCol", h)
@@ -327,6 +360,9 @@ func (c *BindableColumn) Bind(h api.SQLHSTMT, idx int) (bool, error) {
 }
 
 func (c *BindableColumn) Value(h api.SQLHSTMT, idx int) (driver.Value, error) {
+	if drv.Logger != nil {
+		drv.Logger.Info().Msg("BindableColumn.Value")
+	}
 	if !c.IsBound {
 		ret := c.Len.GetData(h, idx, c.CType, c.Buffer)
 		if IsError(ret) {
@@ -351,10 +387,16 @@ type NonBindableColumn struct {
 }
 
 func (c *NonBindableColumn) Bind(h api.SQLHSTMT, idx int) (bool, error) {
+	if drv.Logger != nil {
+		drv.Logger.Info().Msg("NonBindableColumn.Bind")
+	}
 	return false, nil
 }
 
 func (c *NonBindableColumn) Value(h api.SQLHSTMT, idx int) (driver.Value, error) {
+	if drv.Logger != nil {
+		drv.Logger.Info().Msg("NonBindableColumn.Value")
+	}
 	var l BufferLen
 	var total []byte
 	b := make([]byte, 1024)

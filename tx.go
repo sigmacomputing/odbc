@@ -18,6 +18,9 @@ type Tx struct {
 var testBeginErr error // used during tests
 
 func (c *Conn) setAutoCommitAttr(a uintptr) error {
+	if drv.Logger != nil {
+		drv.Logger.Info().Msg("setautocommitattr")
+	}
 	if testBeginErr != nil {
 		return testBeginErr
 	}
@@ -29,6 +32,9 @@ func (c *Conn) setAutoCommitAttr(a uintptr) error {
 }
 
 func (c *Conn) Begin() (driver.Tx, error) {
+	if drv.Logger != nil {
+		drv.Logger.Info().Msg("conn begin")
+	}
 	if c.bad {
 		return nil, driver.ErrBadConn
 	}
@@ -45,6 +51,10 @@ func (c *Conn) Begin() (driver.Tx, error) {
 }
 
 func (c *Conn) endTx(commit bool) error {
+	if drv.Logger != nil {
+		drv.Logger.Info().Msg("endtx")
+	}
+
 	if c.tx == nil {
 		return errors.New("not in a transaction")
 	}
@@ -69,9 +79,15 @@ func (c *Conn) endTx(commit bool) error {
 }
 
 func (tx *Tx) Commit() error {
+	if drv.Logger != nil {
+		drv.Logger.Info().Msg("commit")
+	}
 	return tx.c.endTx(true)
 }
 
 func (tx *Tx) Rollback() error {
+	if drv.Logger != nil {
+		drv.Logger.Info().Msg("rollback")
+	}
 	return tx.c.endTx(false)
 }

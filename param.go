@@ -27,12 +27,18 @@ type Parameter struct {
 // StoreStrLen_or_IndPtr stores v into StrLen_or_IndPtr field of p
 // and returns address of that field.
 func (p *Parameter) StoreStrLen_or_IndPtr(v api.SQLLEN) *api.SQLLEN {
+	if drv.Logger != nil {
+		drv.Logger.Info().Msg("ptr method")
+	}
 	p.StrLen_or_IndPtr = v
 	return &p.StrLen_or_IndPtr
 
 }
 
 func (p *Parameter) BindValue(h api.SQLHSTMT, idx int, v driver.Value, conn *Conn) error {
+	if drv.Logger != nil {
+		drv.Logger.Info().Msg("BindValue (unsafe)")
+	}
 	// TODO(brainman): Reuse memory for previously bound values. If memory
 	// is reused, we, probably, do not need to call SQLBindParameter either.
 	var ctype, sqltype, decimal api.SQLSMALLINT
@@ -169,6 +175,9 @@ func (p *Parameter) BindValue(h api.SQLHSTMT, idx int, v driver.Value, conn *Con
 }
 
 func ExtractParameters(h api.SQLHSTMT) ([]Parameter, error) {
+	if drv.Logger != nil {
+		drv.Logger.Info().Msg("Extract Parameters")
+	}
 	// count parameters
 	var n, nullable api.SQLSMALLINT
 	ret := api.SQLNumParams(h, &n)

@@ -17,6 +17,9 @@ type Rows struct {
 }
 
 func (r *Rows) Columns() []string {
+	if drv.Logger != nil {
+		drv.Logger.Info().Msg("rows.columns")
+	}
 	names := make([]string, len(r.os.Cols))
 	for i := 0; i < len(names); i++ {
 		names[i] = r.os.Cols[i].Name()
@@ -25,6 +28,9 @@ func (r *Rows) Columns() []string {
 }
 
 func (r *Rows) Next(dest []driver.Value) error {
+	if drv.Logger != nil {
+		drv.Logger.Info().Msg("rows.next")
+	}
 	ret := api.SQLFetch(r.os.h)
 	if ret == api.SQL_NO_DATA {
 		return io.EOF
@@ -43,14 +49,23 @@ func (r *Rows) Next(dest []driver.Value) error {
 }
 
 func (r *Rows) Close() error {
+	if drv.Logger != nil {
+		drv.Logger.Info().Msg("rows.close")
+	}
 	return r.os.closeByRows()
 }
 
 func (r *Rows) HasNextResultSet() bool {
+	if drv.Logger != nil {
+		drv.Logger.Info().Msg("rows.has next")
+	}
 	return true
 }
 
 func (r *Rows) NextResultSet() error {
+	if drv.Logger != nil {
+		drv.Logger.Info().Msg("rows.nextresultset")
+	}
 	ret := api.SQLMoreResults(r.os.h)
 	if ret == api.SQL_NO_DATA {
 		return io.EOF
@@ -69,17 +84,26 @@ func (r *Rows) NextResultSet() error {
 // ColumnTypeScanType should return the value type that can be used to scan
 // types into.
 func (r *Rows) ColumnTypeScanType(index int) reflect.Type {
+	if drv.Logger != nil {
+		drv.Logger.Info().Msg("scan type")
+	}
 	return r.os.Cols[index].ScanType()
 }
 
 // Nullable returns true if the column is nullable and false otherwise.
 // If the column nullability is unknown, ok is false.
 func (r *Rows) ColumnTypeNullable(index int) (nullable, ok bool) {
+	if drv.Logger != nil {
+		drv.Logger.Info().Msg("nullable")
+	}
 	return r.os.Cols[index].Nullable()
 }
 
 // ColumnTypeDatabaseTypeName return the database system type name.
 func (r *Rows) ColumnTypeDatabaseTypeName(index int) string {
+	if drv.Logger != nil {
+		drv.Logger.Info().Msg("typename")
+	}
 	switch x := r.os.Cols[index].(type) {
 	case *BindableColumn:
 		return sqlTypeString(x.SQLType)

@@ -28,6 +28,9 @@ type ODBCStmt struct {
 }
 
 func (c *Conn) PrepareODBCStmt(query string) (*ODBCStmt, error) {
+	if drv.Logger != nil {
+		drv.Logger.Info().Msg("Prepare Stmt (unsafe)")
+	}
 	var out api.SQLHANDLE
 	ret := api.SQLAllocHandle(api.SQL_HANDLE_STMT, api.SQLHANDLE(c.h), &out)
 	if IsError(ret) {
@@ -58,6 +61,9 @@ func (c *Conn) PrepareODBCStmt(query string) (*ODBCStmt, error) {
 }
 
 func (s *ODBCStmt) closeByStmt() error {
+	if drv.Logger != nil {
+		drv.Logger.Info().Msg("close stmt")
+	}
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	if s.usedByStmt {
@@ -70,6 +76,9 @@ func (s *ODBCStmt) closeByStmt() error {
 }
 
 func (s *ODBCStmt) closeByRows() error {
+	if drv.Logger != nil {
+		drv.Logger.Info().Msg("close rows")
+	}
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	if s.usedByRows {
@@ -88,6 +97,10 @@ func (s *ODBCStmt) closeByRows() error {
 }
 
 func (s *ODBCStmt) releaseHandle() error {
+	if drv.Logger != nil {
+		drv.Logger.Info().Msg("releasehandle")
+	}
+
 	h := s.h
 	s.h = api.SQLHSTMT(api.SQL_NULL_HSTMT)
 	return releaseHandle(h)
@@ -96,6 +109,9 @@ func (s *ODBCStmt) releaseHandle() error {
 var testingIssue5 bool // used during tests
 
 func (s *ODBCStmt) Exec(args []driver.Value, conn *Conn) error {
+	if drv.Logger != nil {
+		drv.Logger.Info().Msg("stmtexec")
+	}
 	if len(args) != len(s.Parameters) {
 		return fmt.Errorf("wrong number of arguments %d, %d expected", len(args), len(s.Parameters))
 	}
@@ -124,6 +140,10 @@ func (s *ODBCStmt) Exec(args []driver.Value, conn *Conn) error {
 }
 
 func (s *ODBCStmt) BindColumns() error {
+	if drv.Logger != nil {
+		drv.Logger.Info().Msg("bindstmtcols")
+	}
+
 	// count columns
 	var n api.SQLSMALLINT
 	ret := api.SQLNumResultCols(s.h, &n)

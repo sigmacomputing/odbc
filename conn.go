@@ -6,6 +6,7 @@ package odbc
 
 import (
 	"database/sql/driver"
+	"fmt"
 	"strings"
 	"unsafe"
 
@@ -22,6 +23,11 @@ type Conn struct {
 var accessDriverSubstr = strings.ToUpper(strings.Replace("DRIVER={Microsoft Access Driver", " ", "", -1))
 
 func (d *Driver) Open(dsn string) (driver.Conn, error) {
+	if drv.Logger != nil {
+		drv.Logger.Info().Msg("Open")
+	} else {
+		fmt.Println("Open -- no logger")
+	}
 	if d.initErr != nil {
 		return nil, d.initErr
 	}

@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/polytomic/odbc/api"
+	"github.com/rs/zerolog"
 )
 
 var drv Driver
@@ -26,10 +27,11 @@ type Driver struct {
 	h       api.SQLHENV // environment handle
 	initErr error
 	Loc     *time.Location
+	Logger  *zerolog.Logger
 }
 
 func initDriver() error {
-
+	fmt.Println("Initializing...")
 	//Allocate environment handle
 	var out api.SQLHANDLE
 	in := api.SQLHANDLE(api.SQL_NULL_HANDLE)
