@@ -21,13 +21,13 @@ var Recovery func() = func() {
 		panic(fmt.Sprintf("internal failure: %v", r))
 	}
 }
+var Logger *zerolog.Logger
 
 type Driver struct {
 	Stats
 	h       api.SQLHENV // environment handle
 	initErr error
 	Loc     *time.Location
-	Logger  *zerolog.Logger
 }
 
 func initDriver() error {

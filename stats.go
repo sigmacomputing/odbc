@@ -19,8 +19,8 @@ type Stats struct {
 }
 
 func (s *Stats) updateHandleCount(handleType api.SQLSMALLINT, change int) error {
-	if drv.Logger != nil {
-		drv.Logger.Info().Msg("stats (kms)")
+	if Logger != nil {
+		Logger.Info().Msg("stats (kms)")
 	}
 	s.mu.Lock()
 	defer s.mu.Unlock()

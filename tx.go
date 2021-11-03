@@ -18,8 +18,8 @@ type Tx struct {
 var testBeginErr error // used during tests
 
 func (c *Conn) setAutoCommitAttr(a uintptr) error {
-	if drv.Logger != nil {
-		drv.Logger.Info().Msg("setautocommitattr")
+	if Logger != nil {
+		Logger.Info().Msg("setautocommitattr")
 	}
 	if testBeginErr != nil {
 		return testBeginErr
@@ -32,8 +32,8 @@ func (c *Conn) setAutoCommitAttr(a uintptr) error {
 }
 
 func (c *Conn) Begin() (driver.Tx, error) {
-	if drv.Logger != nil {
-		drv.Logger.Info().Msg("conn begin")
+	if Logger != nil {
+		Logger.Info().Msg("conn begin")
 	}
 	if c.bad {
 		return nil, driver.ErrBadConn
@@ -51,8 +51,8 @@ func (c *Conn) Begin() (driver.Tx, error) {
 }
 
 func (c *Conn) endTx(commit bool) error {
-	if drv.Logger != nil {
-		drv.Logger.Info().Msg("endtx")
+	if Logger != nil {
+		Logger.Info().Msg("endtx")
 	}
 
 	if c.tx == nil {
@@ -79,15 +79,15 @@ func (c *Conn) endTx(commit bool) error {
 }
 
 func (tx *Tx) Commit() error {
-	if drv.Logger != nil {
-		drv.Logger.Info().Msg("commit")
+	if Logger != nil {
+		Logger.Info().Msg("commit")
 	}
 	return tx.c.endTx(true)
 }
 
 func (tx *Tx) Rollback() error {
-	if drv.Logger != nil {
-		drv.Logger.Info().Msg("rollback")
+	if Logger != nil {
+		Logger.Info().Msg("rollback")
 	}
 	return tx.c.endTx(false)
 }

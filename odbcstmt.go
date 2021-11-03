@@ -28,8 +28,8 @@ type ODBCStmt struct {
 }
 
 func (c *Conn) PrepareODBCStmt(query string) (*ODBCStmt, error) {
-	if drv.Logger != nil {
-		drv.Logger.Info().Msg("Prepare Stmt (unsafe)")
+	if Logger != nil {
+		Logger.Info().Msg("Prepare Stmt (unsafe)")
 	}
 	var out api.SQLHANDLE
 	ret := api.SQLAllocHandle(api.SQL_HANDLE_STMT, api.SQLHANDLE(c.h), &out)
@@ -61,8 +61,8 @@ func (c *Conn) PrepareODBCStmt(query string) (*ODBCStmt, error) {
 }
 
 func (s *ODBCStmt) closeByStmt() error {
-	if drv.Logger != nil {
-		drv.Logger.Info().Msg("close stmt")
+	if Logger != nil {
+		Logger.Info().Msg("close stmt")
 	}
 	s.mu.Lock()
 	defer s.mu.Unlock()
@@ -76,8 +76,8 @@ func (s *ODBCStmt) closeByStmt() error {
 }
 
 func (s *ODBCStmt) closeByRows() error {
-	if drv.Logger != nil {
-		drv.Logger.Info().Msg("close rows")
+	if Logger != nil {
+		Logger.Info().Msg("close rows")
 	}
 	s.mu.Lock()
 	defer s.mu.Unlock()
@@ -97,8 +97,8 @@ func (s *ODBCStmt) closeByRows() error {
 }
 
 func (s *ODBCStmt) releaseHandle() error {
-	if drv.Logger != nil {
-		drv.Logger.Info().Msg("releasehandle")
+	if Logger != nil {
+		Logger.Info().Msg("releasehandle")
 	}
 
 	h := s.h
@@ -109,8 +109,8 @@ func (s *ODBCStmt) releaseHandle() error {
 var testingIssue5 bool // used during tests
 
 func (s *ODBCStmt) Exec(args []driver.Value, conn *Conn) error {
-	if drv.Logger != nil {
-		drv.Logger.Info().Msg("stmtexec")
+	if Logger != nil {
+		Logger.Info().Msg("stmtexec")
 	}
 	if len(args) != len(s.Parameters) {
 		return fmt.Errorf("wrong number of arguments %d, %d expected", len(args), len(s.Parameters))
@@ -140,8 +140,8 @@ func (s *ODBCStmt) Exec(args []driver.Value, conn *Conn) error {
 }
 
 func (s *ODBCStmt) BindColumns() error {
-	if drv.Logger != nil {
-		drv.Logger.Info().Msg("bindstmtcols")
+	if Logger != nil {
+		Logger.Info().Msg("bindstmtcols")
 	}
 
 	// count columns

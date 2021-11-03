@@ -14,15 +14,15 @@ type Result struct {
 
 func (r *Result) LastInsertId() (int64, error) {
 	// TODO(brainman): implement (*Result).LastInsertId
-	if drv.Logger != nil {
-		drv.Logger.Info().Msg("lastid")
+	if Logger != nil {
+		Logger.Info().Msg("lastid")
 	}
 	return 0, errors.New("not implemented")
 }
 
 func (r *Result) RowsAffected() (int64, error) {
-	if drv.Logger != nil {
-		drv.Logger.Info().Msg("ros affected")
+	if Logger != nil {
+		Logger.Info().Msg("ros affected")
 	}
 	return r.rowCount, nil
 }

@@ -20,8 +20,8 @@ type Stmt struct {
 }
 
 func (c *Conn) Prepare(query string) (driver.Stmt, error) {
-	if drv.Logger != nil {
-		drv.Logger.Info().Msg("conn prepare")
+	if Logger != nil {
+		Logger.Info().Msg("conn prepare")
 	}
 	if c.bad {
 		return nil, driver.ErrBadConn
@@ -34,8 +34,8 @@ func (c *Conn) Prepare(query string) (driver.Stmt, error) {
 }
 
 func (s *Stmt) NumInput() int {
-	if drv.Logger != nil {
-		drv.Logger.Info().Msg("num input")
+	if Logger != nil {
+		Logger.Info().Msg("num input")
 	}
 	if s.os == nil {
 		return -1
@@ -44,8 +44,8 @@ func (s *Stmt) NumInput() int {
 }
 
 func (s *Stmt) Close() error {
-	if drv.Logger != nil {
-		drv.Logger.Info().Msg("stmt close")
+	if Logger != nil {
+		Logger.Info().Msg("stmt close")
 	}
 	if s.os == nil {
 		return errors.New("Stmt is already closed")
@@ -56,8 +56,8 @@ func (s *Stmt) Close() error {
 }
 
 func (s *Stmt) Exec(args []driver.Value) (driver.Result, error) {
-	if drv.Logger != nil {
-		drv.Logger.Info().Msg("stmt exec")
+	if Logger != nil {
+		Logger.Info().Msg("stmt exec")
 	}
 	if s.os == nil {
 		return nil, errors.New("Stmt is closed")
@@ -93,8 +93,8 @@ func (s *Stmt) Exec(args []driver.Value) (driver.Result, error) {
 }
 
 func (s *Stmt) Query(args []driver.Value) (driver.Rows, error) {
-	if drv.Logger != nil {
-		drv.Logger.Info().Msg("stmt query")
+	if Logger != nil {
+		Logger.Info().Msg("stmt query")
 	}
 	if s.os == nil {
 		return nil, errors.New("Stmt is closed")
