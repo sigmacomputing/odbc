@@ -63,9 +63,6 @@ func describeColumn(h api.SQLHSTMT, idx int, namebuf []uint16) (namelen int, sql
 // TODO(brainman): did not check for MS SQL timestamp
 
 func NewColumn(h api.SQLHSTMT, idx int) (Column, error) {
-	if Logger != nil {
-		Logger.Info().Msg("NewColumn")
-	}
 	namebuf := make([]uint16, 150)
 	namelen, sqltype, size, nullable, ret := describeColumn(h, idx, namebuf)
 	if ret == api.SQL_SUCCESS_WITH_INFO && namelen > len(namebuf) {
@@ -135,9 +132,6 @@ type BaseColumn struct {
 }
 
 func (c *BaseColumn) Name() string {
-	if Logger != nil {
-		Logger.Info().Msg("Name")
-	}
 	return c.name
 }
 
@@ -214,18 +208,12 @@ func (c *BaseColumn) Value(buf []byte) (driver.Value, error) {
 // Nullable returns true if the column is nullable and false otherwise.
 // If the column nullability is unknown, ok is false.
 func (c *BaseColumn) Nullable() (bool, bool) {
-	if Logger != nil {
-		Logger.Info().Msg("Nullable")
-	}
 	return c.nullable == 1, true
 }
 
 // Returns the type that can be used to scan types into. For example, the
 // database column type "bigint" this should return "reflect.TypeOf(int64(0))".
 func (c *BaseColumn) ScanType() reflect.Type {
-	if Logger != nil {
-		Logger.Info().Msg("ScanType")
-	}
 	switch c.SQLType {
 	// CHAR
 	case api.SQL_CHAR:
@@ -288,6 +276,9 @@ func (c *BaseColumn) ScanType() reflect.Type {
 		// better to return an uuid?
 		return reflect.TypeOf([]byte{})
 	default:
+		if Logger != nil {
+			Logger.Info().Msg("~~~~ Panicing: ScanType")
+		}
 		panic(fmt.Sprintf("not implemented ScanType() for type %v", c.CType))
 	}
 }
@@ -309,9 +300,6 @@ type BindableColumn struct {
 // TODO(brainman): BindableColumn.Buffer is used by external code after external code returns - that needs to be avoided in the future
 
 func NewBindableColumn(b *BaseColumn, ctype api.SQLSMALLINT, bufSize int) *BindableColumn {
-	if Logger != nil {
-		Logger.Info().Msg("NewBindableColumn")
-	}
 	b.CType = ctype
 	c := &BindableColumn{BaseColumn: b, Size: bufSize}
 	l := 8 // always use small starting buffer
@@ -323,9 +311,6 @@ func NewBindableColumn(b *BaseColumn, ctype api.SQLSMALLINT, bufSize int) *Binda
 }
 
 func NewVariableWidthColumn(b *BaseColumn, ctype api.SQLSMALLINT, colWidth api.SQLULEN) (Column, error) {
-	if Logger != nil {
-		Logger.Info().Msg("NewVariableWidthColumn")
-	}
 	if colWidth == 0 || colWidth > 1024 {
 		b.CType = ctype
 		return &NonBindableColumn{b}, nil
