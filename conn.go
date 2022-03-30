@@ -9,7 +9,7 @@ import (
 	"strings"
 	"unsafe"
 
-	"github.com/polytomic/odbc/api"
+	"github.com/sigmacomputing/odbc/api"
 )
 
 type Conn struct {

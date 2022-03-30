@@ -11,7 +11,7 @@ import (
 	"testing"
 	"time"
 
-	_ "github.com/polytomic/odbc"
+	_ "github.com/sigmacomputing/odbc"
 )
 
 var (

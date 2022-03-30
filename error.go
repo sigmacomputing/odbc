@@ -10,7 +10,7 @@ import (
 	"strings"
 	"unsafe"
 
-	"github.com/polytomic/odbc/api"
+	"github.com/sigmacomputing/odbc/api"
 )
 
 func IsError(ret api.SQLRETURN) bool {
