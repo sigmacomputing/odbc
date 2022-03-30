@@ -8,7 +8,7 @@ import (
 	"fmt"
 	"sync"
 
-	"github.com/polytomic/odbc/api"
+	"github.com/sigmacomputing/odbc/api"
 )
 
 type Stats struct {

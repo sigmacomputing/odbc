@@ -11,7 +11,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/polytomic/odbc/api"
+	"github.com/sigmacomputing/odbc/api"
 )
 
 var drv Driver

@@ -9,7 +9,7 @@ import (
 	"io"
 	"reflect"
 
-	"github.com/polytomic/odbc/api"
+	"github.com/sigmacomputing/odbc/api"
 )
 
 type Rows struct {

@@ -12,7 +12,7 @@ import (
 	"time"
 	"unsafe"
 
-	"github.com/polytomic/odbc/api"
+	"github.com/sigmacomputing/odbc/api"
 )
 
 // TODO(brainman): see if I could use SQLExecDirect anywhere
