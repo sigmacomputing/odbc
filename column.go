@@ -97,17 +97,22 @@ func NewColumn(h api.SQLHSTMT, idx int) (Column, error) {
 	case api.SQL_GUID:
 		var v api.SQLGUID
 		return NewBindableColumn(b, api.SQL_C_GUID, int(unsafe.Sizeof(v))), nil
-	case api.SQL_CHAR, api.SQL_VARCHAR:
+	case api.SQL_CHAR:
 		return NewVariableWidthColumn(b, api.SQL_C_CHAR, size)
-	case api.SQL_WCHAR, api.SQL_WVARCHAR:
+	case api.SQL_WCHAR:
 		return NewVariableWidthColumn(b, api.SQL_C_WCHAR, size)
-	case api.SQL_BINARY, api.SQL_VARBINARY:
+	case api.SQL_BINARY:
 		return NewVariableWidthColumn(b, api.SQL_C_BINARY, size)
-	case api.SQL_LONGVARCHAR:
+	// (eric) SIG-19527 As a workaround for a Databricks ODBC driver bug, we treat
+	// SQL_(W)VARCHAR as SQL_(W)LONGVARCHAR (and SQL_VARBINARY as SQL_LONGVARBINARY).
+	// Specifically, the Simbaspark ODBC driver's SQLDescribeCol API always returns
+	// 256 bytes for the size of a VARCHAR column, regardless of its actual size. As
+	// such, we're effectively ignoring that value.
+	case api.SQL_LONGVARCHAR, api.SQL_VARCHAR:
 		return NewVariableWidthColumn(b, api.SQL_C_CHAR, 0)
-	case api.SQL_WLONGVARCHAR, api.SQL_SS_XML:
+	case api.SQL_WLONGVARCHAR, api.SQL_WVARCHAR, api.SQL_SS_XML:
 		return NewVariableWidthColumn(b, api.SQL_C_WCHAR, 0)
-	case api.SQL_LONGVARBINARY:
+	case api.SQL_LONGVARBINARY, api.SQL_VARBINARY:
 		return NewVariableWidthColumn(b, api.SQL_C_BINARY, 0)
 	default:
 		return nil, fmt.Errorf("unsupported column type %d", sqltype)
