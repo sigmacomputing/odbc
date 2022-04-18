@@ -5,6 +5,7 @@
 package odbc
 
 import (
+	"context"
 	"database/sql/driver"
 	"strings"
 	"unsafe"
@@ -71,4 +72,13 @@ func (c *Conn) newError(apiName string, handle interface{}) error {
 		c.bad = true
 	}
 	return err
+}
+
+// Implement driver.SessionResetter interface for Conn, to discard connections that
+// have been marked as bad.
+func (c *Conn) ResetSession(_ context.Context) error {
+	if c.bad {
+		return driver.ErrBadConn
+	}
+	return nil
 }
