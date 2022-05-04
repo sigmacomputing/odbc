@@ -19,6 +19,7 @@ import (
 
 type ODBCStmt struct {
 	h          api.SQLHSTMT
+	loc        *time.Location
 	Parameters []Parameter
 	Cols       []Column
 	// locking/lifetime
@@ -52,6 +53,7 @@ func (c *Conn) PrepareODBCStmt(query string) (*ODBCStmt, error) {
 	}
 	return &ODBCStmt{
 		h:          h,
+		loc:        c.loc,
 		Parameters: ps,
 		usedByStmt: true,
 	}, nil
@@ -137,7 +139,7 @@ func (s *ODBCStmt) BindColumns() error {
 	s.Cols = make([]Column, n)
 	binding := true
 	for i := range s.Cols {
-		c, err := NewColumn(s.h, i)
+		c, err := NewColumn(s.h, i, s.loc)
 		if err != nil {
 			return err
 		}

@@ -8,6 +8,7 @@ import (
 	"context"
 	"database/sql/driver"
 	"strings"
+	"time"
 	"unsafe"
 
 	"github.com/sigmacomputing/odbc/api"
@@ -18,6 +19,7 @@ type Conn struct {
 	tx               *Tx
 	bad              bool
 	isMSAccessDriver bool
+	loc              *time.Location
 }
 
 var accessDriverSubstr = strings.ToUpper(strings.Replace("DRIVER={Microsoft Access Driver", " ", "", -1))
@@ -25,6 +27,11 @@ var accessDriverSubstr = strings.ToUpper(strings.Replace("DRIVER={Microsoft Acce
 func (d *Driver) Open(dsn string) (driver.Conn, error) {
 	if d.initErr != nil {
 		return nil, d.initErr
+	}
+
+	loc, err := extractTimezoneFromDsn(dsn)
+	if err != nil {
+		return nil, err
 	}
 
 	var out api.SQLHANDLE
@@ -44,7 +51,7 @@ func (d *Driver) Open(dsn string) (driver.Conn, error) {
 		return nil, NewError("SQLDriverConnect", h)
 	}
 	isAccess := strings.Contains(strings.ToUpper(strings.Replace(dsn, " ", "", -1)), accessDriverSubstr)
-	return &Conn{h: h, isMSAccessDriver: isAccess}, nil
+	return &Conn{h: h, isMSAccessDriver: isAccess, loc: loc}, nil
 }
 
 func (c *Conn) Close() (err error) {

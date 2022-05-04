@@ -53,7 +53,7 @@ func describeColumn(h api.SQLHSTMT, idx int, namebuf []uint16) (namelen int, sql
 
 // TODO(brainman): did not check for MS SQL timestamp
 
-func NewColumn(h api.SQLHSTMT, idx int) (Column, error) {
+func NewColumn(h api.SQLHSTMT, idx int, loc *time.Location) (Column, error) {
 	namebuf := make([]uint16, 150)
 	namelen, sqltype, size, nullable, ret := describeColumn(h, idx, namebuf)
 	if ret == api.SQL_SUCCESS_WITH_INFO && namelen > len(namebuf) {
@@ -70,6 +70,7 @@ func NewColumn(h api.SQLHSTMT, idx int) (Column, error) {
 	}
 	b := &BaseColumn{
 		name:     api.UTF16ToString(namebuf[:namelen]),
+		loc:      loc,
 		SQLType:  sqltype,
 		nullable: nullable,
 	}
@@ -122,6 +123,7 @@ func NewColumn(h api.SQLHSTMT, idx int) (Column, error) {
 // BaseColumn implements common column functionality.
 type BaseColumn struct {
 	name     string
+	loc      *time.Location
 	SQLType  api.SQLSMALLINT
 	CType    api.SQLSMALLINT
 	nullable api.SQLSMALLINT
@@ -139,6 +141,9 @@ func (c *BaseColumn) Value(buf []byte) (driver.Value, error) {
 	loc := time.UTC
 	if drv.Loc != nil {
 		loc = drv.Loc
+	}
+	if c.loc != nil {
+		loc = c.loc
 	}
 	switch c.CType {
 	case api.SQL_C_BIT:
